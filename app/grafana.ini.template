@@ -1,0 +1,18 @@
+# Copied to /var/apps/grafana/shares/grafana/grafana.ini on first start only.
+# Data, logs, plugins and provisioning paths are supplied by cmd/main.
+
+[server]
+protocol = http
+http_port = 3000
+
+[database]
+type = sqlite3
+
+[users]
+allow_sign_up = false
+
+[auth.anonymous]
+enabled = false
+
+[log]
+mode = console

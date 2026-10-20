@@ -1,0 +1,38 @@
+name: pack_amd64
+
+on:
+  workflow_call:
+    inputs:
+      target_version:
+        required: true
+        type: string
+      this_pack_manifest_version:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build_appstore_package_amd64:
+    runs-on: ubuntu-latest
+    env:
+      target_version: ${{ inputs.target_version }}
+      target_pack_arch: amd64
+      this_pack_manifest_version: ${{ inputs.this_pack_manifest_version }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Cache Grafana Debian package
+        uses: actions/cache@v4
+        with:
+          path: tmp/downloads
+          key: grafana-deb-${{ runner.os }}-${{ env.target_pack_arch }}-${{ inputs.target_version }}
+      - name: Build fnOS package with tar
+        run: bash scripts/build.sh "$target_pack_arch"
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: appstore.grafana.${{ inputs.this_pack_manifest_version }}.amd64.fpk
+          path: dist/*.fpk
+          if-no-files-found: error

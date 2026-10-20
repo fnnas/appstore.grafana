@@ -1,0 +1,78 @@
+name: Test Release
+run-name: Grafana packages from ${{ github.ref_name }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      make_release:
+        description: Create a GitHub prerelease and upload packages
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: grafana-release-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  target_version: "13.2.4"
+  this_pack_manifest_version: "13.2.4-1"
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      target_version: ${{ env.target_version }}
+      this_pack_manifest_version: ${{ env.this_pack_manifest_version }}
+    steps:
+      - run: echo "All set!"
+
+  pack-amd64:
+    needs: setup
+    uses: ./.github/workflows/pack_amd64.yml
+    with:
+      target_version: ${{ needs.setup.outputs.target_version }}
+      this_pack_manifest_version: ${{ needs.setup.outputs.this_pack_manifest_version }}
+
+  pack-arm64:
+    needs: setup
+    uses: ./.github/workflows/pack_arm64.yml
+    with:
+      target_version: ${{ needs.setup.outputs.target_version }}
+      this_pack_manifest_version: ${{ needs.setup.outputs.this_pack_manifest_version }}
+
+  upload-package:
+    needs: [pack-amd64, pack-arm64]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          pattern: appstore.grafana.*
+          merge-multiple: true
+          path: dist
+      - name: Generate checksums
+        working-directory: dist
+        run: sha256sum ./*.fpk > SHA256SUMS.txt
+      - name: Upload packages and checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: grafana-release
+          path: dist/*
+          if-no-files-found: error
+      - name: Create prerelease
+        if: ${{ inputs.make_release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_VERSION: ${{ env.this_pack_manifest_version }}
+        run: |
+          gh release create "$PACKAGE_VERSION" dist/*.fpk dist/SHA256SUMS.txt \
+            --target "$GITHUB_SHA" --prerelease \
+            --title "Grafana ${PACKAGE_VERSION}" --generate-notes

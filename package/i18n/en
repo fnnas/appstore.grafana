@@ -1,0 +1,3 @@
+[manifest]
+desc="Grafana is an open source platform for visualizing metrics, logs and traces, with support for Prometheus, Loki and other data sources.<br>Sign in with admin / admin and change the password on first login.<br>Configuration, databases and plugins are stored in the grafana shared application folder.<br>This package is maintained by the community."
+changelog="Updated to Grafana @GRAFANA_VERSION@."

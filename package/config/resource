@@ -1,0 +1,12 @@
+{
+  "data-share": {
+    "shares": [
+      { "name": "grafana" },
+      { "name": "grafana/data" },
+      { "name": "grafana/plugins" },
+      { "name": "grafana/log" },
+      { "name": "grafana/provisioning" }
+    ]
+  },
+  "systemd-unit": {}
+}

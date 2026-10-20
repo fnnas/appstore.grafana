@@ -1,0 +1,3 @@
+[manifest]
+desc="Grafana は、メトリクス、ログ及びトレースを可視化するオープンソースの基盤にて候。Prometheus、Loki 等のデータソースに對應仕候。<br>初囘は使用者名・暗號ともに admin にてログインの上、暗號を改められたく候。<br>設定、データベース及びプラグインは、いづれも導入の折に御選びの保存領域に置かれ候。<br>/volX/@appshare/grafana<br>本パッケージはコミュニティの使用者により提供され、同使用者にて保守仕候。"
+changelog="Grafana @GRAFANA_VERSION@ に更新仕候。<br/>"

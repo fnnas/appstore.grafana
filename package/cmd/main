@@ -1,0 +1,115 @@
+#!/bin/bash
+set -uo pipefail
+umask 027
+
+APP_ROOT="/var/apps/${TRIM_APPNAME:-grafana}"
+APP_DEST="${TRIM_APPDEST:-${APP_ROOT}/target}"
+GRAFANA_HOME="${APP_DEST}/grafana"
+GRAFANA_BIN="${GRAFANA_HOME}/bin/grafana"
+SHARE_DIR="${APP_ROOT}/shares/grafana"
+VAR_DIR="${TRIM_PKGVAR:-${APP_ROOT}/var}"
+CONFIG_FILE="${SHARE_DIR}/grafana.ini"
+PID_FILE="${VAR_DIR}/grafana.pid"
+LOG_FILE="${SHARE_DIR}/log/grafana.log"
+PID=""
+
+fail() {
+    printf '%s\n' "$1" >&2
+    if [[ -n "${TRIM_TEMP_LOGFILE:-}" ]]; then
+        printf '%s\n' "$1" > "$TRIM_TEMP_LOGFILE"
+    fi
+    return 1
+}
+
+is_running() {
+    [[ -r "$PID_FILE" ]] || return 1
+    read -r PID < "$PID_FILE" || return 1
+    [[ "$PID" =~ ^[1-9][0-9]*$ ]] || return 1
+    kill -0 "$PID" 2>/dev/null || return 1
+    # Check the executable too, so a reused PID cannot affect another service.
+    local actual expected
+    actual=$(readlink -f "/proc/${PID}/exe") || return 1
+    expected=$(readlink -f "$GRAFANA_BIN") || return 1
+    [[ "$actual" == "$expected" ]]
+}
+
+prepare() {
+    # fnOS creates this share and grants the package user access via config/resource.
+    [[ -d "$SHARE_DIR" ]] || { fail "Grafana shared data directory is missing: ${SHARE_DIR}"; return 1; }
+    mkdir -p "$VAR_DIR" "$SHARE_DIR/data" "$SHARE_DIR/plugins" "$SHARE_DIR/log" \
+        "$SHARE_DIR/provisioning/datasources" "$SHARE_DIR/provisioning/dashboards" \
+        "$SHARE_DIR/provisioning/plugins" "$SHARE_DIR/provisioning/alerting" || return 1
+    if [[ ! -e "$CONFIG_FILE" ]]; then
+        cp "${APP_DEST}/grafana.ini.template" "$CONFIG_FILE" || return 1
+        chmod 600 "$CONFIG_FILE" || return 1
+    fi
+}
+
+start() {
+    if is_running; then
+        return 0
+    fi
+    [[ -x "$GRAFANA_BIN" ]] || { fail "Grafana executable is missing: ${GRAFANA_BIN}"; return 1; }
+    prepare || { fail "Cannot initialize Grafana configuration or data directories."; return 1; }
+    rm -f "$PID_FILE" || return 1
+
+    export GF_PATHS_DATA="${SHARE_DIR}/data"
+    export GF_PATHS_LOGS="${SHARE_DIR}/log"
+    export GF_PATHS_PLUGINS="${SHARE_DIR}/plugins"
+    export GF_PATHS_PROVISIONING="${SHARE_DIR}/provisioning"
+    cd "$GRAFANA_HOME" || return 1
+    nohup "$GRAFANA_BIN" server --homepath "$GRAFANA_HOME" --config "$CONFIG_FILE" \
+        >> "$LOG_FILE" 2>&1 < /dev/null &
+    PID=$!
+    printf '%s\n' "$PID" > "$PID_FILE"
+
+    # Catch immediate failures such as invalid configuration or an occupied port.
+    local attempt
+    for ((attempt = 0; attempt < 5; attempt++)); do
+        sleep 1
+        if ! is_running; then
+            rm -f "$PID_FILE"
+            fail "Grafana failed to start. See ${LOG_FILE} for details."
+            return 1
+        fi
+    done
+}
+
+stop() {
+    if ! is_running; then
+        rm -f "$PID_FILE"
+        return 0
+    fi
+    kill -TERM "$PID" 2>/dev/null || return 1
+    local attempt
+    for ((attempt = 0; attempt < 30; attempt++)); do
+        if ! is_running; then
+            rm -f "$PID_FILE"
+            return 0
+        fi
+        sleep 1
+    done
+    if is_running; then
+        kill -KILL "$PID" 2>/dev/null || return 1
+    fi
+    for ((attempt = 0; attempt < 5; attempt++)); do
+        if ! is_running; then
+            rm -f "$PID_FILE"
+            return 0
+        fi
+        sleep 1
+    done
+    fail "Grafana could not be stopped. See ${LOG_FILE} for details."
+}
+
+case "${1:-}" in
+    start) start ;;
+    stop) stop ;;
+    status)
+        if is_running; then
+            exit 0
+        fi
+        exit 3
+        ;;
+    *) fail "Usage: $0 {start|stop|status}" ;;
+esac

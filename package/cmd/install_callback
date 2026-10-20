@@ -1,0 +1,31 @@
+#!/bin/bash
+set -euo pipefail
+umask 027
+
+APP_ROOT="/var/apps/${TRIM_APPNAME:-grafana}"
+APP_DEST="${TRIM_APPDEST:-${APP_ROOT}/target}"
+SHARE_DIR="${APP_ROOT}/shares/grafana"
+DATASOURCE_DIR="${SHARE_DIR}/provisioning/datasources"
+
+# Reinstalling with retained data must not introduce or replace data sources.
+if [[ -e "$SHARE_DIR/grafana.ini" || -e "$SHARE_DIR/data/grafana.db" ]]; then
+    exit 0
+fi
+
+if [[ ! -d "$SHARE_DIR" ]]; then
+    message="Grafana shared data directory is missing: ${SHARE_DIR}"
+    printf '%s\n' "$message" >&2
+    if [[ -n "${TRIM_TEMP_LOGFILE:-}" ]]; then
+        printf '%s\n' "$message" > "$TRIM_TEMP_LOGFILE"
+    fi
+    exit 1
+fi
+
+mkdir -p "$DATASOURCE_DIR"
+shopt -s nullglob dotglob
+existing_files=("$DATASOURCE_DIR"/*)
+if (( ${#existing_files[@]} > 0 )); then
+    exit 0
+fi
+
+cp -n -- "${APP_DEST}/datasources.yaml.template" "$DATASOURCE_DIR/default.yaml"

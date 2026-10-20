@@ -1,0 +1,3 @@
+[manifest]
+desc="Grafana 是用于指标、日志与追踪数据可视化的开源平台，支持 Prometheus、Loki 等数据源。<br>首次登录用户名和密码均为 admin，登录后需修改密码。<br>配置、数据库与插件保存在应用文件 grafana 共享目录中。<br>此安装包由社区维护。"
+changelog="更新至 Grafana @GRAFANA_VERSION@。"
