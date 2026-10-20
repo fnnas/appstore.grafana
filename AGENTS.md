@@ -5,7 +5,7 @@
 This repository packages upstream Grafana OSS for fnOS; it does not compile Grafana.
 
 - `scripts/build.sh`: asset discovery, download verification, extraction, and packaging.
-- `app/`: configuration template, desktop entry, and UI icons.
+- `app/`: configuration and provisioning templates, bundled dashboards, desktop entry, and UI icons.
 - `package/`: manifest, lifecycle scripts, resource declarations, translations, icons, and wizard directory.
 - `.github/workflows/`: release orchestration and reusable amd64/arm64 builds.
 - `tmp/` and `dist/`: ignored caches and generated packages.
@@ -47,6 +47,12 @@ Rebuild affected architectures after packaging changes. WSL supports archive che
 Declare shared directories in `package/config/resource`. Keep configuration, databases, plugins, provisioning, and logs under `/var/apps/grafana/shares/grafana/`, backed by `/volX/@appshare/grafana/`. Copy templates only when absent; preserve existing data during upgrades and uninstall hooks. Keep PID files in `TRIM_PKGVAR` and retain the dedicated `grafana` user.
 
 Synchronize port changes across the INI template, manifest, and desktop entry.
+
+Initialize default data sources and dashboards only on fresh installation. Skip initialization when configuration, a database, or provisioning files already exist; preserve retained files during reinstall and upgrade.
+
+## Scope & Repository Hygiene
+
+Add only files needed for the requested behavior. Do not add standalone license files or unsolicited license text and links. Preserve README files during cleanup; update their relevant content instead of deleting or relocating them.
 
 ## Commit & Pull Request Guidelines
 

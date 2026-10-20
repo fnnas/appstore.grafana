@@ -33,6 +33,8 @@ Grafana 是一个开源的数据可视化平台，可配合 Prometheus、Loki �
 ├── app/
 │   ├── grafana.ini.template       # Grafana 默认配置模板
 │   ├── datasources.yaml.template  # 本机数据源配置模板
+│   ├── dashboards.yaml.template   # 仪表盘预置配置模板
+│   ├── dashboards/                # 默认仪表盘及来源说明
 │   └── ui/                        # 桌面入口和图标
 ├── package/                       # 应用包预制文件
 │   ├── manifest                   # 应用清单
@@ -61,6 +63,7 @@ Grafana 是一个开源的数据可视化平台，可配合 Prometheus、Loki �
 | 初始密码 | `admin` |
 | 数据库 | SQLite |
 | 默认数据源 | Prometheus Local |
+| 预置仪表盘 | Node Exporter Full |
 
 ### 数据存储路径
 
@@ -82,6 +85,7 @@ Grafana 是一个开源的数据可视化平台，可配合 Prometheus、Loki �
 
 - `grafana.ini` - Grafana 配置文件
 - `data/grafana.db` - 用户、仪表盘、数据源等数据
+- `data/dashboards/` - 预置仪表盘 JSON 文件
 - `plugins/` - 用户安装的插件
 - `provisioning/` - 数据源、仪表盘等预置配置
 - `log/grafana.log` - 运行日志
@@ -117,6 +121,18 @@ Grafana 是一个开源的数据可视化平台，可配合 Prometheus、Loki �
 
 如需修改地址或配置 Basic Auth，编辑该文件后重启 Grafana。其他数据源可以在 Grafana 页面中自行添加。
 
+### 预置仪表盘
+
+全新安装时会导入 [Node Exporter Full（1860）](https://grafana.com/grafana/dashboards/1860-node-exporter-full/)，默认选择 Prometheus Local。  
+首次启动后可在仪表盘列表中打开，并在页面中选择节点。
+
+使用前需让 Prometheus 采集 Node Exporter，例如配置 `job_name: node`、目标 `127.0.0.1:9100`。尚未采集到指标时，仪表盘会显示无数据。
+
+仪表盘 JSON 保存在 `data/dashboards/node-exporter-full.json`，加载配置保存在 `provisioning/dashboards/default.yaml`，均位于 grafana 共享目录。  
+支持在 Grafana 页面中编辑和保存仪表盘；修改 JSON 文件后，文件内容会覆盖页面中保存的修改。
+
+已有 Grafana 配置、数据库、数据源或仪表盘文件时跳过初始化，升级、保留数据重装时沿用已有内容。
+
 ## 构建打包
 
 本项目使用 GitHub Actions 自动构建，从 [Grafana Releases](https://github.com/grafana/grafana/releases) 下载指定版本的官方 `.deb`，提取运行文件后通过 `tar` 打包为 `.fpk`。
@@ -147,5 +163,4 @@ env:
 
 - [Grafana 官方文档](https://grafana.com/docs/grafana/latest/)
 - [Grafana GitHub](https://github.com/grafana/grafana)
-- [Grafana 许可证](https://github.com/grafana/grafana/blob/main/LICENSE)
 - [飞牛NAS 官网](https://www.fnnas.com/)

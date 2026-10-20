@@ -6,8 +6,10 @@ APP_ROOT="/var/apps/${TRIM_APPNAME:-grafana}"
 APP_DEST="${TRIM_APPDEST:-${APP_ROOT}/target}"
 SHARE_DIR="${APP_ROOT}/shares/grafana"
 DATASOURCE_DIR="${SHARE_DIR}/provisioning/datasources"
+DASHBOARD_CONFIG_DIR="${SHARE_DIR}/provisioning/dashboards"
+DASHBOARD_DIR="${SHARE_DIR}/data/dashboards"
 
-# Reinstalling with retained data must not introduce or replace data sources.
+# Reinstalling with retained data must not introduce or replace defaults.
 if [[ -e "$SHARE_DIR/grafana.ini" || -e "$SHARE_DIR/data/grafana.db" ]]; then
     exit 0
 fi
@@ -21,11 +23,13 @@ if [[ ! -d "$SHARE_DIR" ]]; then
     exit 1
 fi
 
-mkdir -p "$DATASOURCE_DIR"
 shopt -s nullglob dotglob
-existing_files=("$DATASOURCE_DIR"/*)
+existing_files=("$DATASOURCE_DIR"/* "$DASHBOARD_CONFIG_DIR"/* "$DASHBOARD_DIR"/*)
 if (( ${#existing_files[@]} > 0 )); then
     exit 0
 fi
 
+mkdir -p "$DATASOURCE_DIR" "$DASHBOARD_CONFIG_DIR" "$DASHBOARD_DIR"
 cp -n -- "${APP_DEST}/datasources.yaml.template" "$DATASOURCE_DIR/default.yaml"
+cp -n -- "${APP_DEST}/dashboards/node-exporter-full.json" "$DASHBOARD_DIR/node-exporter-full.json"
+cp -n -- "${APP_DEST}/dashboards.yaml.template" "$DASHBOARD_CONFIG_DIR/default.yaml"
