@@ -153,8 +153,8 @@ Grafana 是一个开源的数据可视化平台，可配合 Prometheus、Loki �
 
 ```yaml
 env:
-  target_version: "13.2.4"               # Grafana 版本
-  this_pack_manifest_version: "13.2.4-1" # 安装包版本
+  target_version: "13.3.1"               # Grafana 版本
+  this_pack_manifest_version: "13.3.1-1" # 安装包版本
 ```
 
 `target_version` 对应上游 Release tag，填写时去掉 `v` 前缀。同一个 Grafana 版本只调整启动脚本或打包流程时，递增安装包版本的后缀即可。

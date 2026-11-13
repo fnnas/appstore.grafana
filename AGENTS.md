@@ -23,11 +23,13 @@ bash scripts/build.sh arm64
 
 Each command produces `dist/appstore.grafana.<package-version>.<arch>.fpk` and its `.sha256` file. Use the existing tar builder; do not introduce `fnpack`, `versions.env`, or pinned asset filenames and hashes.
 
+For requests that only synchronize the upstream version, confirm the latest official stable release and update the workflow versions and README example. Skip package downloads and local builds unless explicitly requested.
+
 ## Coding Style & Naming Conventions
 
 Use UTF-8 and LF as defined in `.gitattributes`. Indent Bash and embedded Python with four spaces; JSON and YAML use two. Quote shell path variables. Preserve extensionless lifecycle filenames under `package/cmd/` and existing build placeholders.
 
-Keep translations consistent across `zh-CN`, `en`, and `ja-JP`.
+Keep translations consistent across `zh-CN`, `en`, `ja-JP`, `zh-TW`, `de-DE`, `fr-FR`, `es-ES`, `ko-KR`, `ru-RU`, and `it-IT`. Each extensionless file under `package/i18n/` uses `[manifest]` with `desc` and `changelog`; separate description paragraphs with `<br>` and retain the `@GRAFANA_VERSION@` placeholder.
 
 ## Testing Guidelines
 
@@ -40,7 +42,7 @@ for script in scripts/build.sh package/cmd/*; do
 done
 ```
 
-Rebuild affected architectures after packaging changes. WSL supports archive checks and isolated executable checks. Installation, desktop integration, shared-directory permissions, and upgrade behavior require actual fnOS devices. Report only checks performed.
+Rebuild affected architectures after changes to packaging scripts or resources; version-only updates skip local builds as described above. WSL supports archive checks and isolated executable checks. Installation, desktop integration, shared-directory permissions, and upgrade behavior require actual fnOS devices. Report only checks performed.
 
 ## Persistent Data & Configuration
 

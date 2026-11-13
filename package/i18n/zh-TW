@@ -1,0 +1,3 @@
+[manifest]
+desc="Grafana 是用於指標、日誌與追蹤資料視覺化的開源平台，支援 Prometheus、Loki 等資料來源。<br>首次登入的使用者名稱與密碼均為 admin，登入後請變更密碼。<br>設定、資料庫與外掛程式儲存在應用程式檔案的 grafana 共用資料夾中。<br>此安裝套件由社群維護。"
+changelog="更新至 Grafana @GRAFANA_VERSION@。"

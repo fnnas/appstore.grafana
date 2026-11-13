@@ -1,0 +1,3 @@
+[manifest]
+desc="Grafana ist eine Open-Source-Plattform zur Visualisierung von Metriken, Protokollen und Traces und unterstützt Prometheus, Loki sowie weitere Datenquellen.<br>Melden Sie sich beim ersten Mal mit admin / admin an und ändern Sie anschließend das Passwort.<br>Konfiguration, Datenbanken und Plugins werden im freigegebenen Anwendungsordner grafana gespeichert.<br>Dieses Paket wird von der Community gepflegt."
+changelog="Auf Grafana @GRAFANA_VERSION@ aktualisiert."

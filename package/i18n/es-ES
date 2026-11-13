@@ -1,0 +1,3 @@
+[manifest]
+desc="Grafana es una plataforma de código abierto para visualizar métricas, registros y trazas, compatible con Prometheus, Loki y otras fuentes de datos.<br>Inicie sesión por primera vez con admin / admin y cambie la contraseña.<br>La configuración, las bases de datos y los complementos se guardan en la carpeta compartida de la aplicación grafana.<br>Este paquete lo mantiene la comunidad."
+changelog="Actualizado a Grafana @GRAFANA_VERSION@."
